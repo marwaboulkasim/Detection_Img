@@ -1,0 +1,28 @@
+
+--- Python ---
+pycache/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+data
+
+--- Virtualenv ---
+.venv/
+env/
+venv/
+ENV/
+.venv
+
+
+*.log
+*.pot
+*.pyc
+media/
+staticfiles/
+
+--- IDE/OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
