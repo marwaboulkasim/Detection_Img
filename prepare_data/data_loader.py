@@ -19,7 +19,7 @@ def json_df(json_data):
     return df_categories, df_images, df_annotations
 
 
-# --- Load data globally (so it can be imported from other files) ---
+# Load data globally (so it can be imported from other files
 _data = json_loader()
 df_categories, df_images, df_annotations = json_df(_data)
 
