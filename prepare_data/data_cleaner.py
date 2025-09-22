@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from pathlib import Path
 from collections import Counter
@@ -68,6 +69,52 @@ def verify_images(df: pd.DataFrame, column_name: str, folder_path: str):
     missing_in_df = set_folder - set_df
     
     return missing_in_folder, missing_in_df
+
+
+def get_images_without_annotations(images_folder, annotations_file):
+    """
+    Return a list of images that have no annotations.
+    """
+    # Load COCO file
+    with open(annotations_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Get all image IDs that have at least one annotation
+    annotated_image_ids = {ann["image_id"] for ann in data["annotations"]}
+
+    # Map image IDs to file names
+    id_to_name = {img["id"]: img["file_name"] for img in data["images"]}
+    annotated_images = {id_to_name[iid] for iid in annotated_image_ids}
+
+    # Valid image extensions
+    valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
+
+    # Get all images in the folder
+    folder = Path(images_folder)
+    all_images = {f.name for f in folder.iterdir() if f.is_file() and f.suffix.lower() in valid_exts}
+
+    # Find images without annotations
+    images_without_ann = all_images - annotated_images
+
+    return list(images_without_ann)
+
+# Example usage
+result = get_images_without_annotations("../dataset", "../dataset/_annotations.coco.json")
+
+
+
+# Assume 'images_without_ann' is the list of 7 image file names
+images_folder = Path("../dataset")  # path to your images folder
+
+# 'result' from the previous function
+for img_name in result:  
+    img_path = images_folder / img_name
+    if img_path.exists():  
+        img_path.unlink() 
+        print(f"Deleted {img_name}")
+    else:
+        print(f"{img_name} not found")
+
 
 
 if __name__ == "__main__":
