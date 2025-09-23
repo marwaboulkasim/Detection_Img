@@ -2,7 +2,7 @@ import json
 import pandas as pd
 from pathlib import Path
 from collections import Counter
-from prepare_data.data_loader import df_images
+# from prepare_data.data_loader import df_images
 
 
 def cntr(folder_path):
@@ -99,32 +99,69 @@ def get_images_without_annotations(images_folder, annotations_file):
     return list(images_without_ann)
 
 # Example usage
-result = get_images_without_annotations("../dataset", "../dataset/_annotations.coco.json")
-
-
+# result = get_images_without_annotations("../dataset", "../dataset/_annotations.coco.json")
 
 # Assume 'images_without_ann' is the list of 7 image file names
-images_folder = Path("../dataset")  # path to your images folder
+# images_folder = Path("../dataset")  # path to your images folder
 
-# 'result' from the previous function
-for img_name in result:  
-    img_path = images_folder / img_name
-    if img_path.exists():  
-        img_path.unlink() 
-        print(f"Deleted {img_name}")
-    else:
-        print(f"{img_name} not found")
+# # 'result' from the previous function
+# for img_name in result:  
+#     img_path = images_folder / img_name
+#     if img_path.exists():  
+#         img_path.unlink() 
+#         print(f"Deleted {img_name}")
+#     else:
+#         print(f"{img_name} not found")
+
+
+def delete_images(images_folder_path, images_list):
+    """
+    Delete images from a folder based on a list of image file names.
+
+    Parameters:
+    images_folder_path (str or Path): Path to the folder containing images
+    images_list (list): List of image file names to delete
+    """
+    # Ensure we have a Path object
+    images_folder = Path(images_folder_path)
+
+    # Loop through each image name
+    for img_name in images_list:
+        img_path = images_folder / img_name  # Full path to the image
+        if img_path.exists():               # Check if the file exists
+            img_path.unlink()               # Delete the file
+            print(f"Deleted {img_name}")
+        else:
+            print(f"{img_name} not found")
+# delete_pics = delete_images("../dataset/data", result)
 
 
 
-if __name__ == "__main__":
-    # Resolve dataset folder relative to project root
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    folder = BASE_DIR / "dataset"
 
-    missing_in_folder, missing_in_df = verify_images(df_images, "file_name", folder)
-    exts = cntr(folder)
-    print(exts)
 
-    print("Images in DataFrame but not in folder:", sorted(missing_in_folder))
-    print("Images in folder but not in DataFrame:", sorted(missing_in_df))
+
+
+def clean_coco(coco_file, images_dir):
+    images_dir = Path(images_dir)
+
+    with open(coco_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    existing_images = {f.name for f in images_dir.iterdir() if f.is_file()}
+
+    coco_images = {img["file_name"] for img in data["images"]}
+
+    missing = coco_images - existing_images
+    print("Images missing from folder:", missing)
+
+    valid_ids = {img["id"] for img in data["images"] if img["file_name"] in existing_images}
+    data["images"] = [img for img in data["images"] if img["id"] in valid_ids]
+    data["annotations"] = [ann for ann in data["annotations"] if ann["image_id"] in valid_ids]
+
+    with open(coco_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+    print("COCO file cleaned successfully!")
+
+#clean_coco("../dataset/data/_annotations.coco.json", "../dataset/data")
+
