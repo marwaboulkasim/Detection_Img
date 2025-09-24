@@ -1,8 +1,15 @@
 import json
 import pandas as pd
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+JSON_FILE = DATA_DIR / "_annotations.coco.json"
+
 
 # === Charger le fichier COCO ===
-with open("data/_annotations.coco.json", "r") as f:
+with open(JSON_FILE, "r") as f:
     coco = json.load(f)
 
 # Transformer en DataFrames

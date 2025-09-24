@@ -1,11 +1,14 @@
+from pathlib import Path
 from prepare_data.data_loader import load_coco_json
 from prepare_data.data_explorer import annotations_per_image, images_without_annotations, images_per_category, bbox_stats
 from prepare_data.data_cleaner import get_file_extensions, get_images_without_annotations, detect_bbox_anomalies
 
-
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+JSON_FILE = DATA_DIR / "_annotations.coco.json"
 
 def loader():
-    images_df, annotations_df, categories_df = load_coco_json("data/_annotations.coco.json")
+    images_df, annotations_df, categories_df = load_coco_json(JSON_FILE)
 
     return images_df, annotations_df, categories_df
 
@@ -27,11 +30,11 @@ def explorer():
     return ann_per_img, img_no_ann, img_per_category, box_stats
 
 def cleaner():
-    clean = get_file_extensions("data")
-   # print(clean)
+    clean = get_file_extensions(DATA_DIR)
+    # print(clean)
 
     
-    filter_imgs_without_ann = get_images_without_annotations("data", "data/_annotations.coco.json")
+    filter_imgs_without_ann = get_images_without_annotations(DATA_DIR, JSON_FILE)
     #print(f" list of images without annotation: {filter_imgs_without_ann}")
 
     images_df, annotations_df, categories_df = loader()

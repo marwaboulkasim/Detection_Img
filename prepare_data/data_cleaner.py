@@ -5,7 +5,11 @@ import json
 import os
 from PIL import Image
 from collections import Counter
-from prepare_data.data_loader import load_coco_json
+#from prepare_data.data_loader import load_coco_json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+JSON_FILE = DATA_DIR / "_annotations.coco.json"
 
 # === Fonctions utilitaires ===
 
@@ -40,31 +44,26 @@ def remove_file(file_path: Path):
 # === Fonctions de nettoyage et traitement des anomalies ===
 
 def get_images_without_annotations(images_folder, json_file):
-    """
-    Return a list of images that have no annotations.
-    """
-    # Load COCO file
-    with open(json_file, 'r', encoding='utf-8') as f:
-        coco_dict = json.load(f)
+    # Ensure we are working with Path objects
+    images_folder = Path(images_folder)
+    json_file = Path(json_file)
 
-    # Get all image IDs that have at least one annotation
-    annotated_image_ids = {ann["image_id"] for ann in coco_dict["annotations"]}
+    # Load COCO JSON
+    with open(json_file, "r", encoding="utf-8") as f:
+        coco = json.load(f)
 
-    # Map image IDs to file names
-    id_to_name = {img["id"]: img["file_name"] for img in coco_dict["images"]}
-    annotated_images = {id_to_name[iid] for iid in annotated_image_ids}
-
-    # Valid image extensions
-    valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
+    # Get annotated image filenames
+    annotated = {
+        img["file_name"]
+        for img in coco.get("images", [])
+        if any(ann["image_id"] == img["id"] for ann in coco.get("annotations", []))
+    }
 
     # Get all images in the folder
-    folder = Path(images_folder)
-    all_images = {f.name for f in folder.iterdir() if f.is_file() and f.suffix.lower() in valid_exts}
+    all_images = {p.name for p in images_folder.glob("*.jpg")}
 
-    # Find images without annotations
-    images_without_ann = set(all_images) - set(annotated_images)
-
-    return images_without_ann
+    # Return images without annotations
+    return list(all_images - annotated)
 
 #Example usage
 #result = get_images_without_annotations("../dataset", "../dataset/data/_annotations.coco.json")
@@ -84,11 +83,11 @@ def detect_bbox_anomalies(annotations_df: pd.DataFrame) -> pd.DataFrame:
     anomalies = annotations_df[annotations_df['bbox'].apply(is_abnormal)]
     return anomalies
 
-def remove_images_without_annotations(images_df: pd.DataFrame, annotations_df: pd.DataFrame, images_folder) -> pd.DataFrame:
+def remove_images_without_annotations(images_df: pd.DataFrame, annotations_df: pd.DataFrame, DATA_DIR) -> pd.DataFrame:
     """Supprime les images sans annotations physiquement et dans le DataFrame"""
     images_no_ann = get_images_without_annotations(images_df, annotations_df)
     for fname in images_no_ann['file_name']:
-        remove_file(images_folder / fname)
+        remove_file(DATA_DIR / fname)
     images_df_clean = images_df[images_df['id'].isin(annotations_df['image_id'].unique())]
     return images_df_clean
 
