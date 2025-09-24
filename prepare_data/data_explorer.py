@@ -59,31 +59,31 @@ def missing_values(df: pd.DataFrame) -> pd.Series:
 
 
 # === Exploration avancée ===
-if __name__ == "__main__":
-    print("\n--- Exploration des données ---\n")
+# if __name__ == "__main__":
+#     print("\n--- Exploration des données ---\n")
 
-    print("Nombre total d'images :", len(images_df))
-    print("Nombre total d'annotations :", len(annotations_df))
-    print("Catégories :", categories_df['name'].tolist())
+#     print("Nombre total d'images :", len(images_df))
+#     print("Nombre total d'annotations :", len(annotations_df))
+#     print("Catégories :", categories_df['name'].tolist())
 
-    print("\nNombre d'images par catégorie :")
-    print(images_per_category(annotations_df, categories_df))
+#     print("\nNombre d'images par catégorie :")
+#     print(images_per_category(annotations_df, categories_df))
 
-    print("\nStatistiques sur le nombre d'annotations par image :")
-    print(annotations_per_image(annotations_df)['num_annotations'].describe())
+#    # print("\nStatistiques sur le nombre d'annotations par image :")
+#     #print(annotations_per_image(annotations_df)['num_annotations'].describe())
 
-    print("\nQuelques images sans annotations :")
-    print(images_without_annotations(images_df, annotations_df).head())
+#     print("\nQuelques images sans annotations :")
+#     print(images_without_annotations(images_df, annotations_df).head())
 
-    print("\n--- Statistiques Bounding Boxes ---")
-    print(bbox_stats(annotations_df))
+#     print("\n--- Statistiques Bounding Boxes ---")
+#     print(bbox_stats(annotations_df))
 
-    print("\n--- BBoxes problématiques (hors limites ou surface nulle) ---")
-    invalid_bbox = bbox_issues(annotations_df, images_df)
-    print(invalid_bbox[['image_id', 'bbox', 'width', 'height', 'area']].head())
-    print("Nombre de bboxes problématiques :", len(invalid_bbox))
+#     print("\n--- BBoxes problématiques (hors limites ou surface nulle) ---")
+#     invalid_bbox = bbox_issues(annotations_df, images_df)
+#     print(invalid_bbox[['image_id', 'bbox', 'width', 'height', 'area']].head())
+#     print("Nombre de bboxes problématiques :", len(invalid_bbox))
 
-    print("\n--- Valeurs manquantes ---")
-    print("Images :", missing_values(images_df))
-    print("Annotations :", missing_values(annotations_df))
-    print("Catégories :", missing_values(categories_df))
+#     print("\n--- Valeurs manquantes ---")
+#     print("Images :", missing_values(images_df))
+#     print("Annotations :", missing_values(annotations_df))
+#     print("Catégories :", missing_values(categories_df))
