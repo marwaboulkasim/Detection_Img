@@ -84,7 +84,7 @@ def detect_bbox_anomalies(annotations_df: pd.DataFrame) -> pd.DataFrame:
     anomalies = annotations_df[annotations_df['bbox'].apply(is_abnormal)]
     return anomalies
 
-def remove_images_without_annotations(images_df: pd.DataFrame, annotations_df: pd.DataFrame, images_folder: Path) -> pd.DataFrame:
+def remove_images_without_annotations(images_df: pd.DataFrame, annotations_df: pd.DataFrame, images_folder) -> pd.DataFrame:
     """Supprime les images sans annotations physiquement et dans le DataFrame"""
     images_no_ann = get_images_without_annotations(images_df, annotations_df)
     for fname in images_no_ann['file_name']:
