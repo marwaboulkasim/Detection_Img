@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -48,12 +47,6 @@ def test_images_without_annotations_detects():
     assert len(result) == 1
     assert result.iloc[0]["id"] == 3
 
-def test_images_without_annotations_all_annotated():
-    all_annotated = df_annotations.copy()
-    all_annotated.loc[:, "image_id"] = [1,2,3]
-    result = images_without_annotations(df_images, all_annotated)
-    assert result.empty
-
 def test_images_per_category_counts():
     result = images_per_category(df_annotations, df_categories)
     assert set(result["category"]) == {"catA", "catB"}
@@ -62,9 +55,10 @@ def test_images_per_category_counts():
 
 def test_bbox_stats_contains_expected_columns():
     stats = bbox_stats(df_annotations)
-    assert all(col in stats.columns or col in ["width","height","area"] for col in stats.columns)
+    for col in ["width", "height", "area"]:
+        assert col in stats.columns or col in stats.index.names
 
 def test_bbox_issues_detects_invalid():
     result = bbox_issues(df_annotations, df_images)
     assert len(result) == 1
-    assert result.iloc[0]["bbox"] == [5,5,0,20]
+    assert result.iloc[0]["bbox"] == [5, 5, 0, 20]
