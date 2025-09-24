@@ -1,6 +1,6 @@
 from prepare_data.data_loader import load_coco_json
 from prepare_data.data_explorer import annotations_per_image, images_without_annotations, images_per_category, bbox_stats
-from prepare_data.data_cleaner import get_file_extensions, get_images_without_annotations, detect_bbox_anomalies, remove_images_without_annotations
+from prepare_data.data_cleaner import get_file_extensions, get_images_without_annotations, detect_bbox_anomalies
 
 
 
@@ -39,7 +39,7 @@ def cleaner():
     #print(f" Détecte les BBoxes aberrantes{detect_box_annom}")
 
 
-    imgs_no-anns = remove_images_without_annotations(images_df, annotations_df, "data")
+
     return clean, filter_imgs_without_ann, detect_box_annom
 
 

@@ -4,6 +4,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pytest
 import pandas as pd
+import json
 from prepare_data.data_cleaner import (
     annotations_without_image,
     detect_bbox_anomalies,
@@ -11,7 +12,7 @@ from prepare_data.data_cleaner import (
     get_images_without_annotations
 )
 
-# === Faux DataFrames pour tests ===
+# === Faux DataFrames pour tests sur annotations/images existantes ===
 df_images = pd.DataFrame([
     {"id": 1, "file_name": "img1.jpg"},
     {"id": 2, "file_name": "img2.jpg"},
@@ -24,8 +25,7 @@ df_annotations = pd.DataFrame([
     {"id": 12, "image_id": 99, "bbox": [0, 0, 10, 10]}, # annotation sans image
 ])
 
-# === Tests ===
-
+# === Tests pour les fonctions basées sur DataFrames ===
 def test_annotations_without_image_detects_missing():
     result = annotations_without_image(df_annotations, df_images)
     assert len(result) == 1
@@ -38,29 +38,20 @@ def test_detect_bbox_anomalies_detects():
 
 def test_clean_annotations_removes_bad_and_missing():
     clean = clean_annotations(df_annotations, df_images)
-    # bbox anormale et annotation sans image supprimées
     assert len(clean) == 1
     assert clean.iloc[0]["bbox"] == [10, 10, 50, 50]
 
-def test_get_images_without_annotations_empty_images_df():
-    empty_images = pd.DataFrame(columns=["id", "file_name"])
-    result = get_images_without_annotations(empty_images, df_annotations)
-    # Aucun fichier dans empty_images => résultat vide
-    assert result.empty
-
-def test_get_images_without_annotations_all_returned():
-    empty_annotations = pd.DataFrame(columns=["id", "image_id", "bbox"])
-    result = get_images_without_annotations(df_images, empty_annotations)
-    # Toutes les images n'ont pas d'annotations
-    assert len(result) == len(df_images)
-    assert set(result) == set(df_images["file_name"])
-
-def test_get_images_without_annotations_partial(tmp_path):
+# === Tests pour get_images_without_annotations avec fichiers temporaires ===
+@pytest.fixture
+def tmp_images_folder(tmp_path):
     # Créer un faux dossier avec images
     for name in ["img1.jpg", "img2.jpg", "img3.jpg"]:
         (tmp_path / name).touch()
+    return tmp_path
 
-    # Créer un fichier JSON simulant les annotations COCO
+@pytest.fixture
+def tmp_json_file(tmp_path):
+    # Créer un faux fichier JSON COCO
     json_file = tmp_path / "annotations.json"
     coco_dict = {
         "images": [
@@ -70,15 +61,32 @@ def test_get_images_without_annotations_partial(tmp_path):
         ],
         "annotations": [
             {"id": 10, "image_id": 1, "bbox": [10,10,50,50]},
-            {"id": 11, "image_id": 2, "bbox": [5,5,0,20]}
+            {"id": 11, "image_id": 2, "bbox": [5,5,0,20]}  # bbox anormale
         ]
     }
-    import json
     with open(json_file, "w", encoding="utf-8") as f:
         json.dump(coco_dict, f)
+    return json_file
 
-    result = get_images_without_annotations(tmp_path, json_file)
+def test_get_images_without_annotations_partial(tmp_images_folder, tmp_json_file):
+    result = get_images_without_annotations(tmp_images_folder, tmp_json_file)
     # img3 n'a pas d'annotation => doit être retournée
     assert "img3.jpg" in result
     assert "img1.jpg" not in result
 
+def test_get_images_without_annotations_all_returned(tmp_images_folder):
+    # JSON vide => toutes les images doivent être retournées
+    json_file = tmp_images_folder / "empty.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump({"images": [], "annotations": []}, f)
+    result = get_images_without_annotations(tmp_images_folder, json_file)
+    # Toutes les images du dossier sont retournées
+    assert set(result) == {"img1.jpg", "img2.jpg", "img3.jpg"}
+
+def test_get_images_without_annotations_empty_folder(tmp_path):
+    # Dossier vide + JSON vide
+    json_file = tmp_path / "empty.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump({"images": [], "annotations": []}, f)
+    result = get_images_without_annotations(tmp_path, json_file)
+    assert len(result) == 0
