@@ -52,7 +52,7 @@ def tmp_images_folder(tmp_path):
 @pytest.fixture
 def tmp_json_file(tmp_path):
     # Créer un faux fichier JSON COCO
-    json_file = tmp_path / "annotations.json"
+    json_file = tmp_path / "_annotations.json"
     coco_dict = {
         "images": [
             {"id": 1, "file_name": "img1.jpg"},
@@ -69,6 +69,7 @@ def tmp_json_file(tmp_path):
     return json_file
 
 def test_get_images_without_annotations_partial(tmp_images_folder, tmp_json_file):
+
     result = get_images_without_annotations(tmp_images_folder, tmp_json_file)
     # img3 n'a pas d'annotation => doit être retournée
     assert "img3.jpg" in result
