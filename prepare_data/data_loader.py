@@ -12,7 +12,7 @@ def load_coco_json(json_path: str | Path) -> tuple[pd.DataFrame, pd.DataFrame, p
     
     with json_file.open('r', encoding='utf-8') as f:
         coco_dict = json.load(f)
-    
+   # print(coco_dict)
     images_df = pd.DataFrame(coco_dict.get("images", []))
     annotations_df = pd.DataFrame(coco_dict.get("annotations", []))
     categories_df = pd.DataFrame(coco_dict.get("categories", []))
@@ -28,4 +28,4 @@ def load_coco_json(json_path: str | Path) -> tuple[pd.DataFrame, pd.DataFrame, p
     return images_df, annotations_df, categories_df
 
 # Exemple d'utilisation
-images_df, annotations_df, categories_df = load_coco_json("data/_annotations.coco.json")
+ #images_df, annotations_df, categories_df = load_coco_json("data/_annotations.coco.json")

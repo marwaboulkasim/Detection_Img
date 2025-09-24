@@ -1,4 +1,6 @@
-from prepare_data.pipeline import run_pipeline
+from prepare_data.pipeline import loader, explorer, cleaner
 
 if __name__ == "__main__":
-    run_pipeline("data/_annotations.coco.json")
+   loader()
+   explorer()
+   cleaner()

@@ -1,67 +1,47 @@
-from pathlib import Path
 from prepare_data.data_loader import load_coco_json
-from prepare_data.data_explorer import (
-    annotations_per_image,
-    images_without_annotations,
-    images_per_category,
-    bbox_stats,
-    bbox_issues,
-    missing_values
-)
-from prepare_data.data_cleaner import (
-    remove_images_without_annotations,
-    clean_annotations,
-    save_coco_json,
-    get_file_extensions
-)
+from prepare_data.data_explorer import annotations_per_image, images_without_annotations, images_per_category, bbox_stats
+from prepare_data.data_cleaner import get_file_extensions, get_images_without_annotations, detect_bbox_anomalies, remove_images_without_annotations
 
 
-def run_pipeline(coco_json_path: str | Path = "data/_annotations.coco.json"):
-    data_folder = Path("data")
 
-    # === 1. Chargement ===
-    images_df, annotations_df, categories_df = load_coco_json(coco_json_path)
+def loader():
+    images_df, annotations_df, categories_df = load_coco_json("data/_annotations.coco.json")
 
-    # === 2. Exploration ===
-    print("\n--- Exploration des données ---\n")
-    print("Nombre total d'images :", len(images_df))
-    print("Nombre total d'annotations :", len(annotations_df))
-    print("Catégories :", categories_df['name'].tolist())
+    return images_df, annotations_df, categories_df
 
-    print("\nNombre d'images par catégorie :")
-    print(images_per_category(annotations_df, categories_df))
+def explorer():
+    images_df, annotations_df, categories_df = loader()
+    ann_per_img = annotations_per_image(annotations_df)
+    #print(ann_per_img)
 
-    print("\nStatistiques sur le nombre d'annotations par image :")
-    print(annotations_per_image(annotations_df)['num_annotations'].describe())
-
-    print("\nQuelques images sans annotations :")
-    print(images_without_annotations(images_df, annotations_df).head())
-
-    print("\n--- Statistiques Bounding Boxes ---")
-    print(bbox_stats(annotations_df))
-
-    print("\n--- BBoxes problématiques (hors limites ou surface nulle) ---")
-    invalid_bbox = bbox_issues(annotations_df, images_df)
-    print(invalid_bbox[['image_id', 'bbox']].head())
-    print("Nombre de bboxes problématiques :", len(invalid_bbox))
-
-    print("\n--- Valeurs manquantes ---")
-    print("Images :", missing_values(images_df))
-    print("Annotations :", missing_values(annotations_df))
-    print("Catégories :", missing_values(categories_df))
-
-    print("\n--- Extensions détectées dans data/ ---")
-    print(get_file_extensions(data_folder))
-
-    # === 3. Nettoyage ===
-    print("\n--- Nettoyage des données ---\n")
-    images_df_clean = remove_images_without_annotations(images_df, annotations_df, data_folder)
-    annotations_df_clean = clean_annotations(annotations_df, images_df_clean)
-
-    clean_json_path = data_folder / "_annotations_clean.coco.json"
-    save_coco_json(images_df_clean, annotations_df_clean, categories_df.to_dict(orient="records"), clean_json_path)
-    print(f"JSON nettoyé sauvegardé dans : {clean_json_path}")
+    img_no_ann = images_without_annotations(images_df, annotations_df)
+    #print(img_no_ann)
 
 
-if __name__ == "__main__":
-    run_pipeline("data/_annotations.coco.json")
+    img_per_category = images_per_category(annotations_df, categories_df)
+    #print(img_per_category)
+
+
+    box_stats = bbox_stats(annotations_df)
+    #print(box_stats)
+    return ann_per_img, img_no_ann, img_per_category, box_stats
+
+def cleaner():
+    clean = get_file_extensions("data")
+   # print(clean)
+
+    
+    filter_imgs_without_ann = get_images_without_annotations("data", "data/_annotations.coco.json")
+    #print(f" list of images without annotation: {filter_imgs_without_ann}")
+
+    images_df, annotations_df, categories_df = loader()
+    detect_box_annom = detect_bbox_anomalies(annotations_df)
+    #print(f" Détecte les BBoxes aberrantes{detect_box_annom}")
+
+
+    imgs_no-anns = remove_images_without_annotations(images_df, annotations_df, "data")
+    return clean, filter_imgs_without_ann, detect_box_annom
+
+
+
+

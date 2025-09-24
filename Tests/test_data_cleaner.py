@@ -5,10 +5,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 import pytest
 import pandas as pd
 from prepare_data.data_cleaner import (
-    filter_images_without_annotations,
     annotations_without_image,
     detect_bbox_anomalies,
-    clean_annotations
+    clean_annotations,
+    get_images_without_annotations
 )
 
 # === Faux DataFrames pour tests ===
@@ -26,18 +26,18 @@ df_annotations = pd.DataFrame([
 
 # === Tests ===
 
-def test_filter_images_without_annotations_empty_images_df():
+def test_get_images_without_annotations_empty_images_df():
     empty_images = pd.DataFrame(columns=["id", "file_name"])
-    result = filter_images_without_annotations(empty_images, df_annotations)
+    result = get_images_without_annotations(empty_images, df_annotations)
     assert result.empty
 
-def test_filter_images_without_annotations_all_returned():
+def test_get_images_without_annotations_all_returned():
     empty_annotations = pd.DataFrame(columns=["id", "image_id", "bbox"])
-    result = filter_images_without_annotations(df_images, empty_annotations)
+    result = get_images_without_annotations(df_images, empty_annotations)
     assert len(result) == len(df_images)
 
-def test_filter_images_without_annotations_partial():
-    result = filter_images_without_annotations(df_images, df_annotations)
+def test_get_images_without_annotations_partial():
+    result = get_images_without_annotations(df_images, df_annotations)
     assert len(result) == 1
     assert result.iloc[0]["id"] == 3
 
