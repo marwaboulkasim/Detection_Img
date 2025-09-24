@@ -27,5 +27,6 @@ FFFFFFFFFFF
 .DS_Store
 Thumbs.db
 *.ipynb
-
+.dataset
+dataset
 test
