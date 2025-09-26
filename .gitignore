@@ -5,8 +5,9 @@ pycache/
 *.pyd
 *.so
 data
-
-
+.png
+*.png
+*.jpg
 --- Virtualenv ---
 .venv/
 env/
@@ -35,3 +36,4 @@ resultsV11v3.zip
 resultsV11v3.zip_s
 test.txt
 run
+*.pt
