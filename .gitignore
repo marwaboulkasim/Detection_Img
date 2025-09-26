@@ -5,9 +5,17 @@ pycache/
 *.pyd
 *.so
 data
+<<<<<<< HEAD
 .png
 *.png
 *.jpg
+=======
+*.png 
+*.jpg
+*.pt
+
+
+>>>>>>> 4ae1124 (gitignore)
 --- Virtualenv ---
 .venv/
 env/
